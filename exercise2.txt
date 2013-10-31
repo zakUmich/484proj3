@@ -1,0 +1,27 @@
+a.
+the query:
+explain select * from customers where country='Japan';
+returns:
+(cost=0.00..721.00 rows=995 width=156)
+for an estimated 995 rows.
+
+the query:
+select * from customers where country='Japan';
+also returns 995 rows, the same as the expeted amount.
+
+b.
+(disk pages read * seq_page_cost) + (rows scanned * cpu_tuple_cost)
+where seq_page_cost=1.0 and cpu_tuple_cost=0.01
+
+The query:
+SELECT relpages, reltuples FROM pg_class WHERE relname = 'customers';
+returns relpages = disk pages read = 471,
+	reltuples = rows scanned = 20000
+Expected execution cost = (471 * 1.0) + (20000 * .01)
+Expected execution cost = 671
+
+c.
+explain select * from customers where country='Japan';
+returns:
+	Seq Scan on customers  (cost=0.00..721.00 rows=995 width=156)
+   	  Filter: ((country)::text = 'Japan'::text)
