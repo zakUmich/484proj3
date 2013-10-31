@@ -1,0 +1,125 @@
+Exercise 1: System Catalog Queries (10 Points) 
+ 
+a) (2 points) How many indexes are built on the Customers relation? 
+
+Solution: 1 
+Command 1: \di 
+Then we looked down under indexes and there was one listed (customers_pkey) that was associated with customers
+public | categories_pkey | index | pdubslax | categories
+ public | customers_pkey  | index | pdubslax | customers
+ public | inventory_pkey  | index | pdubslax | inventory
+ public | orders_pkey     | index | pdubslax | orders
+ public | products_pkey   | index | pdubslax | products
+ 
+b) (2 points) Name two relations and two indexes (from the tables and indexes created for DVD Store 
+data) that occupy the most number of disk pages. 
+ 
+Solution: 
+SELECT relpages,relname,relkind FROM pg_class where relkind='r' order by relpages desc limit 2;
+returns 
+ relpages |  relname   | relkind 
+----------+------------+---------
+      471 | customers  | r
+      385 | orderlines | r
+
+SELECT relpages,relname,relkind FROM pg_class where relkind='i' order by relpages desc limit 2;
+returns
+ relpages |    relname     | relkind 
+----------+----------------+---------
+       57 | customers_pkey | i
+       35 | orders_pkey    | i
+ 
+c) (3 points) Find out the number of distinct values in each column of the Customers table using 
+information stored in the Postgres catalog (pg_stats table). Write down the query that you used 
+to obtain this information. Based on what you found, in addition to the attributes that are already 
+indexed, suggest two other attributes that are suitable for building a B-tree index. B-trees are good 
+for range-style queries and sorting. Hash indexes are good for equality-type queries. 
+
+Solution: 
+pdubslax=> select attname,n_distinct from pg_stats where tablename='customers';
+
+ password             |          1 
+ state                |         52
+ customerid           |         -1
+ address2             |          1
+ creditcard           |         -1
+ age                  |         73
+ income               |          5
+ gender               |          2
+ firstname            |         -1
+ lastname             |         -1
+ address1             |         -1
+ city                 |         -1
+ zip                  |     -0.475
+ country              |         11
+ region               |          2
+ email                |         -1
+ phone                |         -1
+ creditcardtype       |          5
+ creditcardexpiration |         60
+ username             |         -1
+
+ pdubslax=> select count(*) from customers;
+ 20000
+
+ so multiply all these values < 1 by 20000 to get #distinct values in each column
+
+ password             |          1 
+ state                |         52
+ customerid           |         -1 * 20000 = 20000
+ address2             |          1
+ creditcard           |         -1 * 20000 = 20000
+ age                  |         73
+ income               |          5
+ gender               |          2
+ firstname            |         -1 * 20000 = 20000
+ lastname             |         -1 * 20000 = 20000
+ address1             |         -1 * 20000 = 20000
+ city                 |         -1 * 20000 = 20000
+ zip                  |     -0.475 * 20000 = 9500
+ country              |         11
+ region               |          2
+ email                |         -1 * 20000 = 20000
+ phone                |         -1 * 20000 = 20000
+ creditcardtype       |          5
+ creditcardexpiration |         60
+ username             |         -1 * 20000 = 20000
+
+ Two other attributes that you could use as an index to build a b tree would be age or creditcardexpiration since they both have a limited number of distinct values which would allow for clustering and you could see who needs a credit card within the year or who is > 50.
+
+d) (3 points) Find out the number of distinct values in each column of the Customers table without 
+using the Postgres catalog. Write down the query that you used to obtain this information. How 
+does the expected count from the catalog compare with the actual count values? Show the 
+comparison in a table. 
+
+Solution:
+select count(distinct password), count(distinct state), count(distinct customerid), count(distinct address2),count(distinct creditcard),count(distinct age),count(distinct income),count(distinct gender),count(distinct firstname),count(distinct lastname),count(distinct address1),count(distinct city),count(distinct zip),count(distinct country),count(distinct region),count(distinct email),count(distinct phone),count(distinct creditcardtype),count(distinct creditcardexpiration),count(distinct username) from customers;
+
+returns:
+1 |    52 | 20000 |     1 | 20000 |    73 |     5 |     2 | 20000 | 20000 | 20000 | 20000 |  9500 |    11 |     2 | 20000 | 20000 |     5 |    60 | 20000
+
+This is exactly equal to the answers derived with the posgres catalog 
+
+Attribute Name        | Catalog Count | Actual Count 
+ password             |            1  |            1   
+ state                |           52  |           52
+ customerid           |        20000  |        20000
+ address2             |            1  |            1
+ creditcard           |        20000  |        20000
+ age                  |           73  |           73
+ income               |            5  |            5
+ gender               |            2  |            2
+ firstname            |        20000  |        20000
+ lastname             |        20000  |        20000
+ address1             |        20000  |        20000
+ city                 |        20000  |        20000
+ zip                  |         9500  |         9500
+ country              |           11  |           11
+ region               |            2  |            2
+ email                |        20000  |        20000
+ phone                |        20000  |        20000
+ creditcardtype       |            5  |            5
+ creditcardexpiration |           60  |           60
+ username             |        20000  |        20000
+
+ 
