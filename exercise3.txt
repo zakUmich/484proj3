@@ -1,0 +1,30 @@
+a)
+The query:
+select relpages from pg_class where relname = 'customers_country';
+returns:
+
+ relpages
+----------
+       59
+(1 row)
+The customers_country index occupies 59 pages.
+
+b)
+The query:
+explain select * from customers where country='Japan';
+returns:
+                          QUERY PLAN
+---------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..721.00 rows=995 width=156)
+   Filter: ((country)::text = 'Japan'::text)
+(2 rows)
+and still has an access method of Sequential Scan, and still has an expected cost of 721.
+
+c)
+
+
+d)
+The query:
+explain select * from customers where country='Japan';
+Now accesses with an Index Scan using customers_country on customers, with an Index condition of ((country)::text = 'Japan'::text).
+There is now an estimated cost of 56.66, this is the best plan for these queries, as the estimated cost is 664.34 less than the original cost wihtout clustering.

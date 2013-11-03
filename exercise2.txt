@@ -2,12 +2,16 @@ a.
 the query:
 explain select * from customers where country='Japan';
 returns:
-(cost=0.00..721.00 rows=995 width=156)
+                          QUERY PLAN
+---------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..721.00 rows=995 width=156)
+   Filter: ((country)::text = 'Japan'::text)
+(2 rows)
 for an estimated 995 rows.
 
 the query:
 select * from customers where country='Japan';
-also returns 995 rows, the same as the expeted amount.
+also returns 995 rows, the same as the expected amount.
 
 b.
 (disk pages read * seq_page_cost) + (rows scanned * cpu_tuple_cost)
