@@ -21,10 +21,23 @@ returns:
 and still has an access method of Sequential Scan, and still has an expected cost of 721.
 
 c)
-
+The non-clustered index does not lead to any benefits, as it does not actually provide a more efficient way to access the data, and does not usefully presort it. Adding a clause of "where country='Japan'" to the end of the index would increase efficiency.
 
 d)
 The query:
 explain select * from customers where country='Japan';
+
 Now accesses with an Index Scan using customers_country on customers, with an Index condition of ((country)::text = 'Japan'::text).
 There is now an estimated cost of 56.66, this is the best plan for these queries, as the estimated cost is 664.34 less than the original cost wihtout clustering.
+
+                                       QUERY PLAN
+-----------------------------------------------------------------------
+ Index Scan using customers_country on customers  (cost=0.00..56.66 rows=995 width=156
+   Index Cond: ((country)::text = 'Japan'::text)
+(2 rows)
+
+
+e)
+Both queries plan to use scan using coutry='Japan' first, but the clustered query plans to use this as an index condition, whereas the unclustered query plans to use this as a filter.
+After, the clustered query will use an Index scan on the customers_country index, and the unclustered query will use a sequential scan.
+The clustered query also executes with an estimated cost of 644.34 less than the estimated cost of the unclustered query.
