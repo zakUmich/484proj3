@@ -1,0 +1,25 @@
+                               QUERY PLAN
+-----------------------------------------------------------------------
+ Seq Scan on customers c  (cost=0.00..5001021.00 rows=6667 width=15)
+   Filter: (4 < (SubPlan 1))
+   SubPlan 1
+     ->  Aggregate  (cost=250.00..250.01 rows=1 width=0)
+           ->  Seq Scan on orders o  (cost=0.00..250.00 rows=1 width=0)
+                 Filter: (customerid = $0)
+(6 rows)
+
+a)
+The estimated total cost for the query is 5001021.00.
+
+b)
+create view OrderCount(customerid, numorders) 
+as select O.customerId, count(*) from Orders O group by O.customerid;
+
+c)
+select C.customerid, C.lastname 
+from OrderCount OC, Customers C 
+where OC.numorders > 4 AND OC.customerid = C.customerid;
+
+d)
+The estimated total cost for my query 6.2 is 1703.29.
+This cost is much less than the estimated total cost of query 6.1, as there is no nested query.

@@ -18,7 +18,7 @@ returns:
  Seq Scan on customers  (cost=0.00..721.00 rows=995 width=156)
    Filter: ((country)::text = 'Japan'::text)
 (2 rows)
-and still has an access method of Sequential Scan, and still has an expected cost of 721.
+and still has an access method of Sequential Scan, and still has an expected total cost of 721.
 
 c)
 The non-clustered index does not lead to any benefits, as it does not actually provide a more efficient way to access the data, and does not usefully presort it. Adding a clause of "where country='Japan'" to the end of the index would increase efficiency.

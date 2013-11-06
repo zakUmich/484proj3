@@ -1,0 +1,35 @@
+b)
+ 		 QUERY PLAN
+------------------------------------------
+ Hash Join  (cost=733.44..1004.41 rows=597 width=8)
+   Hash Cond: (o.customerid = c.customerid)
+   ->  Seq Scan on orders o  (cost=0.00..220.00 rows=12000 width=12)
+   ->  Hash  (cost=721.00..721.00 rows=995 width=4)
+         ->  Seq Scan on customers c  (cost=0.00..721.00 rows=995 width=4)
+               Filter: ((country)::text = 'Japan'::text)
+(6 rows)
+
+The query optimizer uses a hash join.
+The total estimated cost of the hash join is 1004.41.
+The estimated cardinality of his query is 597 rows.
+
+c)
+                                QUERY PLAN
+-----------------------------------------------------------------------
+ Merge Join  (cost=1803.59..1874.53 rows=597 width=8)
+   Merge Cond: (c.customerid = o.customerid)
+   ->  Sort  (cost=770.54..773.03 rows=995 width=4)
+         Sort Key: c.customerid
+         ->  Seq Scan on customers c  (cost=0.00..721.00 rows=995 width=4)
+               Filter: ((country)::text = 'Japan'::text)
+   ->  Sort  (cost=1033.04..1063.04 rows=12000 width=12)
+         Sort Key: o.customerid
+         ->  Seq Scan on orders o  (cost=0.00..220.00 rows=12000 width=12)
+(9 rows)
+
+With hash join disabled, the query optimizer now uses Merge Join.
+The new total estimated cost is 1874.53.
+
+d)
+Once Merge join is disabled, the optimizer uses nested loops. 
+The estimated cost is 5749.36.
