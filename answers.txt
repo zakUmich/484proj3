@@ -122,4 +122,57 @@ Attribute Name        | Catalog Count | Actual Count
  creditcardexpiration |           60  |           60
  username             |        20000  |        20000
 
+
+Exercise 5:
+
+a) 
+Hash Join , TEC = 1501.36
+Merge Join , TEC = 2325,55
+b)
+Merge Join , TEC 2265.19
+Hash Join , TEC 3813.54
+c)Explain why the optimizer may have selected different join algorithms. Using Merge Join will automatically order on the merge condition. This is required in query 5.2 when we have an order by C.customerid. Hash Join is a faster join and the order condition is not the join condition.
+Exercise 7:
+
+a)
+TEC = 614927.01
+
+
+
+
+b)
+create view OrderCountJapan(customerid, numorders)
+as select C.customerid, count(*)
+from Orders O, Customers C
+where C.country = 'Japan' AND O.customerid = C.customerid
+group by C.customerid
+order by count desc;
+
+create view MoreFrequentJapanCustomers(customerid, oRank) as
+select C.customerid, -1 + Rank() 
+over (
+	order by count(*) desc 
+) as ranks
+from Orders O, Customers C
+where C.country = 'Japan' AND O.customerid = C.customerid
+group by C.customerid
+order by count(*) desc;
+
+
+
+
+c)
+select C.customerid,C.lastname, O.numorders
+from MoreFrequentJapanCustomers M, OrderCountJapan O, Customers C
+where M.oRank<=5 and M.customerid=C.customerid and O.customerid = C.customerid
+group by C.customerid,C.lastname, O.numorders
+order by count(*) asc;
+
+
+
+d)
+7.2 TEC : 3080.47
+7.1 TEC = 614927.01
+This is an example of how extra levels of nesting can greatly increase the cost of a query. When we removed the nested levels and executed the query in a single block, the total cost drastically decreased. 
+
  
